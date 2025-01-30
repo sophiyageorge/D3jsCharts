@@ -16,19 +16,96 @@
         .axis_label{
             font-size:14px;
         }
+        .tooltip{
+            position:absolute;
+            background:white;
+            padding:5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            visibility: hidden;
+            pointer-events:none;
+        }
     </style>
     <title>Bar Charts</title>
 </head>
 <body>
     <svg width="500" height="300"></svg>
-
+    <div class="tooltip" ></div>
     <script>
 
         // sample data
         const data = [
-            { category:"A", value :30}
-            
-        ]
+            { category:"A", value :30},
+            { category:"B", value :80},
+            { category:"c", value :45},
+            { category:"D", value :60},
+            { category:"E", value :20},
+            { category:"F", value :50}
+
+        ];
+
+        // set dimensions
+        
+        const width = 500;
+        const height = 300;
+        const margin = { top : 20,right:20,bottom:40,left:40};
+
+        // select SVG and set attributes
+        const svg = d3.select("svg")
+            .attr("width",width)
+            .attr("height",height);
+
+        // Create X scale ( categorical)
+
+        const xScale = d3.scaleBand()
+            .domain(data.map(d=>d.category)) // map category
+            .range([margin.left,width-margin.right])
+            .padding(0.2); // space between bars
+
+        const yScale = d3.scaleLinear()
+            .domain([0,d3.max(data,(d)=>d.value)])
+            .range([height - margin.bottom,margin.top])
+
+            // tooltip
+            const tooltip=d3.select(".tooltip")
+
+        //  drow bars
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class","bar")
+            .attr("x",d =>xScale(d.category))
+            .attr("y",d=>yScale(d.value))
+            .attr("width",xScale.bandwidth())
+            .attr("height",d=>height-margin.bottom -yScale(d.value))
+            .on("mouseover",function(event,d){
+                d3.select(this).attr("fill","red")
+                tooltip.style("visibility","visible")
+                .text(`value:${d.value}`)
+                .style("left",(event.pageX+10)+"px")
+                .style("top",(event.pageY)-10+"px")
+            })
+            .on("mousemove",function(event){
+                tooltip.style("left",(event.pageX+10)+"px")
+                .style("top",(event.pageY)-10+"px")
+            })
+            .on("mouseout",function(event){
+                tooltip.style("visibility","hidden")
+                tooltip.style(this).attr("fill","steelblue");
+              
+            });
+
+        svg.append("g")
+            .attr("transform",`translate(${margin.left},0)`)
+            .call(d3.axisLeft(yScale))
+            .attr("class","axis-label");
+
+        svg.append("g")
+            .attr("transform",`translate(${margin.left},${height-margin.bottom})`)
+            .call(d3.axisBottom(xScale))
+            .attr("class","axis-label")
+
+
     </script>
     
 </body>
