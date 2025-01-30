@@ -75,9 +75,10 @@
             .enter().append("rect")
             .attr("class","bar")
             .attr("x",d =>xScale(d.category))
-            .attr("y",d=>yScale(d.value))
+            .attr("y",height-margin.bottom)
             .attr("width",xScale.bandwidth())
-            .attr("height",d=>height-margin.bottom -yScale(d.value))
+            .attr("height",0) //start height
+            // .attr("height",d=>height-margin.bottom -yScale(d.value))
             .on("mouseover",function(event,d){
                 d3.select(this).attr("fill","red")
                 tooltip.style("visibility","visible")
@@ -93,7 +94,11 @@
                 tooltip.style("visibility","hidden")
                 tooltip.style(this).attr("fill","steelblue");
               
-            });
+            })
+            .transition()
+            .duration(1000)
+            .attr("y",d=>yScale(d.value))
+            .attr("height",d=>height-margin.bottom-yScale(d.value))
 
         svg.append("g")
             .attr("transform",`translate(${margin.left},0)`)
