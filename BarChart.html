@@ -25,16 +25,25 @@
             visibility: hidden;
             pointer-events:none;
         }
+
+        button{
+            margin-top : 20px;
+            padding :8px 15px;
+            font-size:16px;
+            cursor:pointer;
+        }
     </style>
     <title>Bar Charts</title>
 </head>
 <body>
     <svg width="500" height="300"></svg>
     <div class="tooltip" ></div>
+    <br>
+    <button onclick="updateData()">Change Data</button>
     <script>
 
         // sample data
-        const data = [
+        var data = [
             { category:"A", value :30},
             { category:"B", value :80},
             { category:"c", value :45},
@@ -110,7 +119,25 @@
             .call(d3.axisBottom(xScale))
             .attr("class","axis-label")
 
+    
 
+        function updateData(){
+            data = data.map(d=>({category:d.category,value:Math.floor(Math.random()*100)+10}));
+            yScale.domain([0,d3.max(data,d=>d.value)]);
+
+            // select all bars and update
+            svg.selectAll(".bar")
+            .data(data)
+            .transition()
+            .duration(1000)
+            .attr("y",d=>yScale(d.value))
+            .attr("height",d=>height-margin.bottom-yScale(d.value));
+
+           svg.select("g:nth-child(2)")
+            .transition()
+            .duration(1000)
+            .call(d3.axisLeft(yScale));
+        }
     </script>
     
 </body>
