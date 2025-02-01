@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <title>D3 Bar Chart</title>
+</head>
+
+<body>
+  <h1>Interactive D3 Bar Chart</h1>
+  <svg width="800" height="600"></svg>
+
+  <script>
+    const svg = d3.select("svg");
+    const data = [100, 200, 300];
+
+    // Define margins
+    const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+    const width = 800 - margin.left - margin.right;
+    const height = 600 - margin.top - margin.bottom;
+
+    // Define scales
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data)])
+      .range([height, 0]); // Inverted range for correct y-direction
+
+    const xScale = d3.scaleBand()
+      .domain(data.map((d, i) => i))
+      .range([0, width])
+      .padding(0.3);
+
+    // Append a group element for margins
+    const chart = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Append bars
+    chart.selectAll("rect")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", (d, i) => xScale(i))
+      .attr("y", d => yScale(d))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => height - yScale(d))
+      .attr("fill", "blue");
+
+    // Append X-axis
+    chart.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(xScale));
+
+    // Append Y-axis
+    chart.append("g")
+      .call(d3.axisLeft(yScale));
+  </script>
+</body>
+
+</html>

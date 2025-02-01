@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .axis text {
+            font-size: 14px;
+        }
+        .dot {
+            stroke: black;
+            stroke-width: 1px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="600" height="500"></svg>
+
+    <script>
+        const width = 600, height = 500;
+        const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+        const svg = d3.select("svg");
+
+        // ✅ Sample data: (x, y, size, category)
+        const data = [
+            { x: 10, y: 20, size: 15, category: "A" },
+            { x: 40, y: 90, size: 20, category: "B" },
+            { x: 60, y: 50, size: 10, category: "C" },
+            { x: 80, y: 70, size: 25, category: "A" },
+            { x: 30, y: 40, size: 18, category: "B" }
+        ];
+
+        // ✅ Scales
+        const xScale = d3.scaleLinear().domain([0, 100]).range([margin.left, width - margin.right]);
+        const yScale = d3.scaleLinear().domain([0, 100]).range([height - margin.bottom, margin.top]);
+        const sizeScale = d3.scaleLinear().domain([10, 25]).range([5, 15]); // Scale for circle size
+        const colorScale = d3.scaleOrdinal().domain(["A", "B", "C"]).range(["red", "blue", "green"]); // Color by category
+
+        // ✅ Axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+            .attr("transform", `translate(0, ${height - margin.bottom})`)
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, 0)`)
+            .call(yAxis);
+
+        // ✅ Scatter plot points
+        svg.selectAll("circle")
+            .data(data)
+            .enter().append("circle")
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+            .attr("r", d => sizeScale(d.size))
+            .attr("fill", d => colorScale(d.category))
+            .attr("class", "dot");
+
+        // ✅ Add Labels
+        svg.selectAll("text.label")
+            .data(data)
+            .enter().append("text")
+            .attr("x", d => xScale(d.x) + 5)
+            .attr("y", d => yScale(d.y) - 5)
+            .attr("font-size", "12px")
+            .text(d => d.category);
+    </script>
+</body>
+</html>

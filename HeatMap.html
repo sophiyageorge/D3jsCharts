@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <svg width="400" height="400"></svg>
+
+    <script>
+        // Heatmap data: 5 rows × 5 columns with random values
+        const data = [];
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 5; j++) {
+                data.push({ row: i, col: j, value: Math.random() * 100 });
+            }
+        }
+
+        const svg = d3.select("svg");
+        const cellSize = 60; // Size of each heatmap cell
+        const margin = 50;
+
+        // Color scale (Maps values to colors)
+        const colorScale = 
+     
+        d3.scaleSequential(d3.interpolateBlues)
+            .domain([0, 100]); // Adjust based on your data range
+
+        // Create heatmap cells (rectangles)
+        svg.selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", d => margin + d.col * cellSize)
+            .attr("y", d => margin + d.row * cellSize)
+            .attr("width", cellSize)
+            .attr("height", cellSize)
+            .attr("fill", d => colorScale(d.value)) // Color based on value
+            .attr("stroke", "white"); // Border for visibility
+
+        // Add text labels for values
+        svg.selectAll("text")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("x", d => margin + d.col * cellSize + cellSize / 2)
+            .attr("y", d => margin + d.row * cellSize + cellSize / 2)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .attr("fill", "black")
+            .attr("font-size", "14px")
+            .text(d => Math.round(d.value));
+    </script>
+</body>
+</html>

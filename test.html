@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Scatter Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <svg width="600" height="400"></svg>
+
+    <script>
+        // Sample data (array of objects)
+        const data = [
+            { x: 5, y: 20 }, { x: 10, y: 35 }, { x: 15, y: 40 },
+            { x: 20, y: 60 }, { x: 25, y: 45 }, { x: 30, y: 80 }
+        ];
+
+        // SVG dimensions
+        const width = 600, height = 400, margin = 50;
+
+        // Create scales
+        const xScale = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.x)])
+            .range([margin, width - margin]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.y)])
+            .range([height - margin, margin]);
+
+        // Select the SVG
+        const svg = d3.select("svg");
+
+        // Add axes
+        svg.append("g")
+            .attr("transform", `translate(0, ${height - margin})`)
+            .call(d3.axisBottom(xScale));
+
+        svg.append("g")
+            .attr("transform", `translate(${margin}, 0)`)
+            .call(d3.axisLeft(yScale));
+
+        // Add scatter points
+        svg.selectAll("circle")
+            .data(data)
+            .enter().append("circle")
+            .attr("cx", d => xScale(d.x))
+            .attr("cy", d => yScale(d.y))
+            .attr("r", 5)
+            .attr("fill", "steelblue");
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .axis text {
+            font-size: 14px;
+        }
+        .legend text {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <svg width="500" height="500"></svg>
+
+    <script>
+        const svg = d3.select("svg"),
+              width = 500, height = 500,
+              margin = { top: 50, right: 50, bottom: 100, left: 100 },
+              gridSize = 60; // Cell size
+
+        // Generate 5x5 heatmap data (random values between 0 and 100)
+        const rows = 5, cols = 5;
+        const data = [];
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                data.push({ row: i, col: j, value: Math.random() * 100 });
+            }
+        }
+
+        // Define scales
+        const xScale = d3.scaleBand().domain(d3.range(cols)).range([margin.left, margin.left + cols * gridSize]);
+        const yScale = d3.scaleBand().domain(d3.range(rows)).range([margin.top, margin.top + rows * gridSize]);
+        const colorScale = d3.scaleSequential(d3.interpolateInferno).domain([0, 100]);
+
+        // Draw heatmap cells
+        svg.selectAll("rect")
+            .data(data)
+            .enter().append("rect")
+            .attr("x", d => xScale(d.col))
+            .attr("y", d => yScale(d.row))
+            .attr("width", gridSize)
+            .attr("height", gridSize)
+            .attr("fill", d => colorScale(d.value))
+            .attr("stroke", "white");
+
+        // Add text labels
+        svg.selectAll("text")
+            .data(data)
+            .enter().append("text")
+            .attr("x", d => xScale(d.col) + gridSize / 2)
+            .attr("y", d => yScale(d.row) + gridSize / 2)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .attr("fill", "white")
+            .attr("font-size", "14px")
+            .text(d => Math.round(d.value));
+
+        // Add X and Y axes
+        const xAxis = d3.axisBottom(xScale).tickFormat(d => `Col ${d}`);
+        const yAxis = d3.axisLeft(yScale).tickFormat(d => `Row ${d}`);
+
+        svg.append("g")
+            .attr("transform", `translate(0, ${margin.top + rows * gridSize})`)
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, 0)`)
+            .call(yAxis);
+
+        // Add legend
+        const legendWidth = 200, legendHeight = 20;
+        const legendScale = d3.scaleLinear().domain([0, 100]).range([0, legendWidth]);
+
+        const legendAxis = d3.axisBottom(legendScale).ticks(5);
+
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(${margin.left}, ${margin.top + rows * gridSize + 50})`);
+
+        const gradient = svg.append("defs").append("linearGradient")
+            .attr("id", "gradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "0%");
+
+        gradient.selectAll("stop")
+            .data(d3.range(0, 101, 10))
+            .enter().append("stop")
+            .attr("offset", d => `${d}%`)
+            .attr("stop-color", d => colorScale(d));
+
+        legend.append("rect")
+            .attr("width", legendWidth)
+            .attr("height", legendHeight)
+            .style("fill", "url(#gradient)");
+
+        legend.append("g")
+            .attr("transform", `translate(0, ${legendHeight})`)
+            .call(legendAxis);
+    </script>
+</body>
+</html>

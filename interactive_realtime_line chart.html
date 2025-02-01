@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js Line Chart with Real-Time Updates and Interactivity</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    #chart {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      border-radius: 3px;
+      pointer-events: none;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <div class="tooltip" style="display: none;"></div>
+
+  <script>
+    // Set dimensions and margins
+    const width = 800;
+    const height = 400;
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+
+    // Append SVG to the container
+    const svg = d3
+      .select("#chart")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Initial data
+    let data = Array.from({ length: 20 }, (_, i) => ({
+      x: i + 1,
+      y: Math.floor(Math.random() * 100),
+    }));
+
+    // Scales for x and y axes
+    const xScale = d3
+      .scaleLinear()
+      .domain([0, d3.max(data, (d) => d.x)])
+      .range([0, width - margin.left - margin.right]);
+
+    const yScale = d3
+      .scaleLinear()
+      .domain([0, 100]) // Fixed domain for consistent updates
+      .range([height - margin.top - margin.bottom, 0]);
+
+    // Line generator
+    const line = d3
+      .line()
+      .x((d) => xScale(d.x))
+      .y((d) => yScale(d.y))
+      .curve(d3.curveMonotoneX); // Smooth curve
+
+    // Append the line path
+    const path = svg
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    // Add x-axis
+    const xAxis = svg
+      .append("g")
+      .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+      .call(d3.axisBottom(xScale).ticks(10));
+
+    // Add y-axis
+    const yAxis = svg.append("g").call(d3.axisLeft(yScale));
+
+    // Add points to the chart
+    let points = svg
+      .selectAll(".point")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "point")
+      .attr("cx", (d) => xScale(d.x))
+      .attr("cy", (d) => yScale(d.y))
+      .attr("r", 4)
+      .attr("fill", "orange");
+
+    // Tooltip setup
+    const tooltip = d3.select(".tooltip");
+
+    // Add interactivity
+    points
+      .on("mouseover", (event, d) => {
+        tooltip
+          .style("display", "block")
+          .html(`x: ${d.x}<br>y: ${d.y}`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 20}px`);
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY - 20}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.style("display", "none");
+      });
+
+    // Function to update the chart with new data
+    function updateChart() {
+      // Add a new data point and remove the first
+      data.push({ x: data[data.length - 1].x + 1, y: Math.floor(Math.random() * 100) });
+      data.shift();
+
+      // Update scales
+      xScale.domain([data[0].x, data[data.length - 1].x]);
+
+      // Update the line path
+      path
+        .datum(data)
+        .transition()
+        .duration(500)
+        .attr("d", line);
+
+      // Update points
+      points = svg.selectAll(".point").data(data);
+
+      points
+        .enter()
+        .append("circle")
+        .attr("class", "point")
+        .attr("cx", (d) => xScale(d.x))
+        .attr("cy", (d) => yScale(d.y))
+        .attr("r", 4)
+        .attr("fill", "orange")
+        .merge(points)
+        .transition()
+        .duration(500)
+        .attr("cx", (d) => xScale(d.x))
+        .attr("cy", (d) => yScale(d.y));
+
+      points.exit().remove();
+
+      // Re-add interactivity for updated points
+      points
+        .on("mouseover", (event, d) => {
+          tooltip
+            .style("display", "block")
+            .html(`x: ${d.x}<br>y: ${d.y}`)
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY - 20}px`);
+        })
+        .on("mousemove", (event) => {
+          tooltip
+            .style("left", `${event.pageX + 10}px`)
+            .style("top", `${event.pageY - 20}px`);
+        })
+        .on("mouseout", () => {
+          tooltip.style("display", "none");
+        });
+
+      // Update axes
+      xAxis.transition().duration(500).call(d3.axisBottom(xScale).ticks(10));
+      yAxis.transition().duration(500).call(d3.axisLeft(yScale));
+    }
+
+    // Set an interval to update the chart every second
+    setInterval(updateChart, 5000);
+  </script>
+</body>
+</html>

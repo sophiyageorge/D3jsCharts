@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <title>D3 Heatmap</title>
+</head>
+
+<body>
+  <h1>D3 Heatmap Example</h1>
+  <svg width="600" height="400"></svg>
+
+  <script>
+    const svg = d3.select("svg");
+
+    // Sample heatmap data (3x3 grid)
+    // const data = [
+    //   { row: 0, col: 0, value: 10 }, { row: 0, col: 1, value: 30 }, { row: 0, col: 2, value: 50 },
+    //   { row: 1, col: 0, value: 20 }, { row: 1, col: 1, value: 40 }, { row: 1, col: 2, value: 60 },
+    //   { row: 2, col: 0, value: 30 }, { row: 2, col: 1, value: 50 }, { row: 2, col: 2, value: 80 }
+    // ];
+
+    const rows = 3, cols = 3;
+        const data = [];
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                data.push({ row: i, col: j, value: Math.random() * 100 });
+            }
+        }
+
+    // Define grid size
+    const numRows = 3;
+    const numCols = 3;
+    const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+    const width = 600 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+    const cellWidth = width / numCols;
+    const cellHeight = height / numRows;
+
+    // Color scale for heatmap
+    const colorScale = d3.scaleSequential(d3.interpolateBlues)
+      .domain([0, d3.max(data, d => d.value)]);
+
+    // Axes scales
+    const xScale = d3.scaleBand()
+      .domain([0, 1, 2])
+      .range([0, width])
+      .padding(0.05);
+
+    const yScale = d3.scaleBand()
+      .domain([0, 1, 2])
+      .range([0, height])
+      .padding(0.05);
+
+    // Append a group for the heatmap
+    const chart = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Draw heatmap cells
+    chart.selectAll("rect")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", d => xScale(d.col))
+      .attr("y", d => yScale(d.row))
+      .attr("width", cellWidth)
+      .attr("height", cellHeight)
+      .attr("fill", d => colorScale(d.value))
+      .attr("stroke", "white");
+
+
+      svg.selectAll("text")
+            .data(data)
+            .enter().append("text")
+            .attr("x", d => xScale(d.col) + cellWidth / 2)
+            .attr("y", d => yScale(d.row) + cellHeight / 2)
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .attr("fill", "white")
+            .attr("font-size", "14px")
+            .text(d => Math.round(d.value));
+
+    // X-axis
+    chart.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(xScale).tickFormat(d => `Col ${d + 1}`));
+
+    // Y-axis
+    chart.append("g")
+      .call(d3.axisLeft(yScale).tickFormat(d => `Row ${d + 1}`));
+
+  </script>
+</body>
+
+</html>
